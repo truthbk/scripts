@@ -72,21 +72,16 @@ then
         networksetup -setsocksfirewallproxystate $DEVICE off
     fi
 
-    kill -9 $(ps aux |grep 'ssh -D 8080 -f -C -q -N' | grep -v 'grep' | head -n1 | awk '{ print $2 }')
-    exit 0
-fi
-
-if [[ $DISABLE -eq 1 ]];
-then
-    echo 'disabling ssh tunnel, and SOCKS proxy.'
-    if [ 1 -eq $ISMAC ];
+    PID=$(ps aux |grep 'ssh -D 8080 -f -C -q -N' | grep -v 'grep' | head -n1 | awk '{ print $2 }')
+   
+    if [ ! -z $PID ];
     then
-        networksetup -setsocksfirewallproxystate $DEVICE off
+	    kill -9 $PID
     fi
-
-    killall ssh
+    
     exit 0
 fi
+
 
 if [[ -z $USERNAME ]] || [[ -z $HOSTNAME ]] 
 then
