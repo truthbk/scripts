@@ -1,5 +1,10 @@
+#!/usr/bin/python
+
 import imaplib
 import datetime
+
+import getopt
+import sys
 
 class IMAPQuery:
 
@@ -76,3 +81,60 @@ class MailSession:
         for uid in messages[0].split():
             self.mail.store(uid, '+FLAGS', '\\Deleted')
         self.mail.expunge()
+
+
+def main(argv):
+
+    user = None
+    passwd = None
+    server = None
+    folder = None
+    cmd = None
+    cmd_args = None
+
+    valid_cmds = [];
+    valid_cmds.append("LIST");
+    valid_cmds.append("READ");
+    valid_cmds.append("DELETE");
+
+    try:
+        opts, args = getopt.getopt(
+                argv, 
+                "hu:p:s:f:c:a:", 
+                ["help", "username=","password=","server=","folder=","command=","args="])
+    except getopt.GetoptError:
+        usage()
+        exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()
+            exit(2)
+        elif opt in ("-u", "--username"):
+            username = arg
+        elif opt in ("-p", "--password"):
+            passwd = arg
+        elif opt in ("-s", "--server"):
+            server = arg
+        elif opt in ("-f", "--folder"):
+            folder = arg
+        elif opt in ("-c", "--command"):
+            cmd = arg
+            if cmd not in valid_cmds:
+                usage()
+                exit(1)
+        elif opt in ("-a", "--args"):
+            cmd_args = arg
+
+    mail = MailSession(user, passwd, server)
+    mail.login()
+    if folder is None:
+        print "you must specify a folder to act on"
+        mail.folders()
+        mail.logout()
+        exit(0)
+
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
